@@ -11,6 +11,27 @@ package monocypher
 import "C"
 import "unsafe"
 
+func GeneratePublicKey(secretKey []byte) []byte {
+	/*
+		void crypto_sign_public_key(
+			uint8_t        public_key[32],
+			const uint8_t  secret_key[32]
+		);
+	*/
+
+	CPubKey := (*C.uint8_t)(C.CBytes(make([]uint8, 32)))
+	defer C.free(unsafe.Pointer(CPubKey))
+
+	CSecKey := (*C.uint8_t)(C.CBytes(secretKey))
+	defer C.free(unsafe.Pointer(CSecKey))
+
+	// C Method call
+	C.crypto_sign_public_key(CPubKey, CSecKey)
+
+	// Converting CTypes back to Go
+	return C.GoBytes(unsafe.Pointer(CPubKey), C.int(32))
+}
+
 // SignMessage signs a message with your secret key. The generated signature is returned.
 func SignMessage(message, secretKey, publicKey []byte) []byte {
 	/*
